@@ -1,40 +1,48 @@
 # Use Tkinter for python 2, tkinter for python 3
 from tkinter import *
 import time
+import threading
 import csv
 from datetime import datetime
+import math
 
 from UIComponents import *
+from Classes import *
 
-from TemperatureChamber import TemperatureChamber
-from FlowMeter import FlowMeter
+temp_chamber1_name = "temperature chamber 1"
+flow_controller1_name = "flow controller 1"
+flow_controller2_name = "flow controller 2"
+usb_interface_name = "Dev board"
+
+
 
 class GUI():
     def __init__(self, master):
 
         self.RUNNING = False
         self.data = []
+        self.connected_devices = []
 
         # ---------------------------------
         # Dev board
         # ---------------------------------
-        self.dev_board = DevBoardUI(master, "Dev board")
+        self.dev_board = DevBoardUI(master, usb_interface_name)
         self.dev_board.getFrame().grid(row=1, column=0, sticky=W)
 
         # ---------------------------------
         # temp chamber
         # ---------------------------------
-        self.temperature_chamber_1_ui = TemperatureChamberUI(master, "temperature chamber 1")
+        self.temperature_chamber_1_ui = TemperatureChamberUI(master, temp_chamber1_name)
         self.temperature_chamber_1_ui.getFrame().grid(row=13, column=0, sticky=W)
         # ---------------------------------
         # Flow 1
         # ---------------------------------
-        self.flow_controller_1_ui = FlowControllerUI(master, "flow controller 1")
+        self.flow_controller_1_ui = FlowControllerUI(master, flow_controller1_name)
         self.flow_controller_1_ui.getFrame().grid(row=21, column=0, sticky=W)
         # ---------------------------------
         # Flow 2
         # ---------------------------------
-        self.flow_controller_2_ui = FlowControllerUI(master, "flow controller 2")
+        self.flow_controller_2_ui = FlowControllerUI(master, flow_controller2_name)
         self.flow_controller_2_ui.getFrame().grid(row=22, column=0, sticky=W)
         # ---------------------------------
         # Control Panel
@@ -42,8 +50,8 @@ class GUI():
         self.control_panel = ControlPanelUI(master, "Control Panel", self.start_pressed, self.stop_pressed)
         self.control_panel.getFrame().grid(row = 23, column = 0, sticky=W)
 
-        self.peripherals = [self.temperature_chamber_1_ui, self.flow_controller_1_ui, self.flow_controller_2_ui]
-
+        self.peripherals = [self.dev_board, self.temperature_chamber_1_ui, self.flow_controller_1_ui, self.flow_controller_2_ui]
+        
     def start_pressed(self):
 
         # reset dev board values
@@ -56,6 +64,9 @@ class GUI():
             and self.flow_controller_1_ui.checkInputs()
             and self.control_panel.checkInputs())
         print("user inputs success: " + str(self.user_inputs_success))
+
+        self.checkPeripherals()
+        self.start_test()
         # self.flow_controller = FlowMeter("COM6")
         # print(self.flow_controller.checkCommunication())
  
@@ -69,19 +80,61 @@ class GUI():
             # todo: change the below so that it checks the connection
             if(peripheral.isEnabled()):
                 message = message + peripheral.getTitle() + " " + check_mark + '\n'
+                self.add_connected_device(peripheral)
             else:
                 message = message + peripheral.getTitle() + " " + x_mark + '\n'
             self.control_panel.setMessage(message)
+        
+        print(self.connected_devices)
+
+    def add_connected_device(self, device):
+        name = device.getTitle()
+        com_port = device.getSelectedComPort()
+        print(com_port)
+        if(not com_port == ""):
+            if(name == temp_chamber1_name):
+                self.connected_devices.append(TemperatureChamber(com_port))
+            elif(name == flow_controller1_name):
+                self.connected_devices.append(FlowMeter(com_port))
+            elif(name == flow_controller2_name):
+                self.connected_devices.append(FlowMeter(com_port))
+            elif(name == usb_interface_name):
+                self.connected_devices.append(USBInterface(com_port))
+            else:
+                print("not a valid device")
+        else:
+            print("not a valid com port")
+        
+    def start_test(self):
+        self.RUNNING = True
+        self.running_devices = []
+        sample_interval = self.control_panel.getSampleInterval()
+        print(sample_interval)
+        # self.bgTask = DataController(sample_interval, self.connected_devices[0].getData)
+        # self.bgTask.start()
+        self.timer = Timer()
+        self.timer.startTimer()
+            # self.bgTask.printQueue()
+        self.updateUI()
+        # self.bgTask.stop()
+
+    def updateUI(self):
+        timer = self.timer.getTimerValue()
+        if(timer == 10):
+            return
+        else:
+            print(timer)
+            root.after(1000, self.updateUI)
+
 
     def stop_pressed(self):
         self.RUNNING = False
         # save data to csv file
-        self.saveToCsv()
-        self.result_text.set("Test completed successfully")
+        # self.saveToCsv()
+        # self.result_text.set("Test completed successfully")
 
-    def retrieveData(self):
-        while (self.RUNNING):
-           
+    # def retrieveData(self):
+    #     while (self.RUNNING):
 
     def saveToCsv(self):
         now = datetime.now()

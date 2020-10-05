@@ -15,7 +15,12 @@ class ControlPanelUI:
         self.stop = Button(self.labelframe, text="STOP", command=stop_pressed)
         self.stop.grid(row=2, column = 0, sticky=W, padx=5, pady=5)
 
-        Label(self.labelframe, text="Messages").grid(row = 0, column = 2, sticky=W)
+        # time elapsed row
+        self.time_elapsed_text = DoubleVar()
+        Label(self.labelframe, text="Time Elapsed: ").grid(row=0, column=2, sticky=W)
+        Label(self.labelframe, textvariable=self.time_elapsed_text).grid(row=0, column=3, sticky=W)
+
+        Label(self.labelframe, text="Messages").grid(row = 1, column = 2, sticky=W)
         self.message_text = StringVar()
 
         self.message_text.set("To begin, select peripherals you want, insert sample rate and press start")
@@ -27,8 +32,20 @@ class ControlPanelUI:
         else:
             return True
 
+    def getSampleInterval(self):
+        return self.sample_rate_text.get()
+
+    def setSampleRateIntervale(self, sampleInterval):
+        self.sample_rate_text.set(sampleInterval)
+
     def setMessage(self, msg):
         self.message_text.set(msg)
+
+    def getTimeElapsed(self):
+        return self.time_elapsed_text.get()
+
+    def setTimeElapsed(self, time):
+        self.time_elapsed_text.set(time)
 
     def getFrame(self):
         return self.labelframe

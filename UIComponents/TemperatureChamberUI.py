@@ -17,6 +17,7 @@ class TemperatureChamberUI:
         # Com port
         Label(self.labelframe, text="COM PORT: ").grid(row = 2, column = 0)
         self.selected_com_port = StringVar()
+        self.selected_com_port.set('')
         self.com_ports = Utils.getComPorts()
         option = OptionMenu(self.labelframe, self.selected_com_port, *self.com_ports).grid(row = 2, column = 1)
 
@@ -47,7 +48,7 @@ class TemperatureChamberUI:
         return self.labelframe
 
     def getSelectedComPort(self):
-        return self.selected_com_port
+        return self.selected_com_port.get()
 
     def getStartTemp(self):
         return self.start_temp

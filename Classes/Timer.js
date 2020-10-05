@@ -1,9 +1,3 @@
-# Use Tkinter for python 2, tkinter for python 3
-import time
-import threading
-import math
-
-
 class Timer:
     def __init__(self):
         self.timer = 0
@@ -27,18 +21,3 @@ class Timer:
     
     def getTimerValue(self):
         return self.timer
-
-
-
-def main():
-    t = Timer()
-    t.startTimer()
-    for i in range(20):
-        print(t.getTimerValue())
-        time.sleep(2)
-
-    t.stopTimer()
-
-
-
-main()
