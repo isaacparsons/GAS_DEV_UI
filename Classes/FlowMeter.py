@@ -4,7 +4,8 @@ import struct
 
 
 class FlowMeter:
-    def __init__(self, port):
+
+    def setPort(self, port):
         self.ser = serial.Serial(
             port=port,
             baudrate=38400,
@@ -12,6 +13,7 @@ class FlowMeter:
             stopbits=serial.STOPBITS_ONE,
             bytesize=serial.EIGHTBITS
             )
+
     def float_to_hex(self, f):
         return hex(struct.unpack('<I', struct.pack('<f', f))[0])
 

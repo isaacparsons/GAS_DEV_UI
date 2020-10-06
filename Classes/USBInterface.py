@@ -4,7 +4,11 @@ import json
 import sys
 
 class USBInterface():
-    def __init__(self, port):
+    def __init__(self):
+        self.is_running = False
+        self.data = []
+
+    def setPort(self, port):
         # configure the serial connections (the parameters differs on the device you are connecting to)
         self.ser = serial.Serial(
             port=port,
@@ -12,10 +16,8 @@ class USBInterface():
             parity=serial.PARITY_ODD,
             stopbits=serial.STOPBITS_TWO,
             bytesize=serial.SEVENBITS,
-            # timeout=1000
+            timeout=1000
         )
-        self.is_running = False
-        self.data = []
 
     def getData(self):
         # request data from pyduino

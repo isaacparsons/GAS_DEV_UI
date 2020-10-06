@@ -5,6 +5,7 @@ import threading
 import csv
 from datetime import datetime
 import math
+from queue import Queue
 
 from UIComponents import *
 from Classes import *
@@ -15,6 +16,21 @@ flow_controller2_name = "flow controller 2"
 usb_interface_name = "Dev board"
 
 
+temp_chamber1 = TemperatureChamber()
+flow_controller1 = FlowMeter()
+flow_controller2 = FlowMeter()
+usb_interface = USBInterface()
+
+
+class DataInterface:
+    def __init__(self, func):
+        self.queue = Queue()
+        self.func = func
+
+    def getDataFunc(self):
+        return self.func
+
+
 
 class GUI():
     def __init__(self, master):
@@ -22,6 +38,11 @@ class GUI():
         self.RUNNING = False
         self.data = []
         self.connected_devices = []
+
+        self.temp_chamber_1_data_interface = DataInterface(temp_chamber1.currentChamberTemperature)
+        self.flow_controller1_data_interface = DataInterface(flow_controller1.readFlowRate)
+        self.flow_controller2_data_interface = DataInterface(flow_controller2.readFlowRate)
+        self.usb_interface_data_interface = DataInterface(usb_interface.getData)
 
         # ---------------------------------
         # Dev board
@@ -34,16 +55,19 @@ class GUI():
         # ---------------------------------
         self.temperature_chamber_1_ui = TemperatureChamberUI(master, temp_chamber1_name)
         self.temperature_chamber_1_ui.getFrame().grid(row=13, column=0, sticky=W)
+        
         # ---------------------------------
         # Flow 1
         # ---------------------------------
         self.flow_controller_1_ui = FlowControllerUI(master, flow_controller1_name)
         self.flow_controller_1_ui.getFrame().grid(row=21, column=0, sticky=W)
+
         # ---------------------------------
         # Flow 2
         # ---------------------------------
         self.flow_controller_2_ui = FlowControllerUI(master, flow_controller2_name)
         self.flow_controller_2_ui.getFrame().grid(row=22, column=0, sticky=W)
+
         # ---------------------------------
         # Control Panel
         # ---------------------------------
@@ -93,13 +117,13 @@ class GUI():
         print(com_port)
         if(not com_port == ""):
             if(name == temp_chamber1_name):
-                self.connected_devices.append(TemperatureChamber(com_port))
+                temp_chamber1.setPort(com_port)
             elif(name == flow_controller1_name):
-                self.connected_devices.append(FlowMeter(com_port))
+                flow_controller1.setPort(com_port)
             elif(name == flow_controller2_name):
-                self.connected_devices.append(FlowMeter(com_port))
+                flow_controller2.setPort(com_port)
             elif(name == usb_interface_name):
-                self.connected_devices.append(USBInterface(com_port))
+                usb_interface.setPort(com_port)
             else:
                 print("not a valid device")
         else:
@@ -110,11 +134,17 @@ class GUI():
         self.running_devices = []
         sample_interval = self.control_panel.getSampleInterval()
         print(sample_interval)
+        self.data_controller = DataController(sample_interval,self.usb_interface_data_interface.queue, self.usb_interface_data_interface.getDataFunc())
+        self.data_controller.start()
+        print(self.usb_interface_data_interface.queue)
+            # [DataController(sample_interval,self.temp_chamber_1_data_interface.queue, self.temp_chamber_1_data_interface.getData),
+            # DataController(sample_interval,self.flow_controller1_data_interface.queue, self.flow_controller1_data_interface.getData),
+            # DataController(sample_interval,self.flow_controller2_data_interface.queue, self.flow_controller2_data_interface.getData),
+            # DataController(sample_interval,self.usb_interface_data_interface.queue, self.usb_interface_data_interface.getData)]
         # self.bgTask = DataController(sample_interval, self.connected_devices[0].getData)
         # self.bgTask.start()
         self.timer = Timer()
         self.timer.startTimer()
-            # self.bgTask.printQueue()
         self.updateUI()
         # self.bgTask.stop()
 
@@ -123,7 +153,7 @@ class GUI():
         if(timer == 10):
             return
         else:
-            print(timer)
+            print(list(self.data_controller.queue.queue))
             root.after(1000, self.updateUI)
 
 

@@ -1,14 +1,13 @@
-from queue import Queue
 import threading
 import time
 
 
 class DataController:
-    def __init__(self, sampleInterval, __taskFuncPointer_):
+    def __init__(self, sampleInterval, queue, __taskFuncPointer_):
         self.isRunning = False
+        self.queue = queue
         self.sampleInterval = sampleInterval
         self.__taskFuncPointer_ = __taskFuncPointer_
-        self.queue = Queue()
         self.thread = threading.Thread(target=self.workerThread)
         
     def start(self):
@@ -17,9 +16,6 @@ class DataController:
 
     def stop(self):
         self.isRunning = False
-
-    def printQueue(self):
-        print(list(self.queue.queue))
 
     def workerThread(self):
         while(self.isRunning):

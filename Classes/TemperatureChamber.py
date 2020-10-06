@@ -5,12 +5,14 @@ import time
 import serial
 
 class TemperatureChamber:
-    def __init__(self, port):
+    def __init__(self):
+        self.steps = 1
+        self.set_point = None
+
+    def setPort(self, port):
         self.instrument = minimalmodbus.Instrument(port, 1)  # port name, slave address (in decimal)
         self.instrument.serial.baudrate = 9600
         self.instrument.close_port_after_each_call = True
-        self.steps = 1
-        self.set_point = None
 
 
     # sometimes the chamber is slow to respond 
