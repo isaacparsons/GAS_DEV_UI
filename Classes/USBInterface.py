@@ -3,6 +3,10 @@ import time
 import json
 import sys
 
+# class that retrieves data from the pyduino has a custom
+# protocol (in the file DAQ.py) that responds to the 
+# request 'GET_DATA'
+
 class USBInterface():
     def __init__(self):
         self.is_running = False
@@ -20,9 +24,16 @@ class USBInterface():
         )
 
     def getData(self):
-        # request data from pyduino
-        self.ser.write(b'GET_DATA')
-        # read data that is sent back from pyduino
-        d = self.ser.readline()
-        parsedD = json.loads(d)
-        return parsedD
+        if(self.ser.is_open):
+            try:
+                # request data from pyduino
+                self.ser.write(b'GET_DATA')
+                # read data that is sent back from pyduino
+                d = self.ser.readline()
+                parsedD = json.loads(d)
+                return parsedD
+            except:
+                return None
+        else:
+            return None
+        

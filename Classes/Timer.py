@@ -1,10 +1,11 @@
 import threading
 import time
-import math
 
 class Timer:
-    def __init__(self):
+    def __init__(self, sample_interval):
         self.timer = 0
+        self.sample_rate_intervals_count = 1
+        self.sample_interval = sample_interval
         self.is_running = False
         self.thread = threading.Thread(target=self.runTimer)
 
@@ -16,12 +17,14 @@ class Timer:
 
     def runTimer(self):
         while(self.is_running):
-            if(math.floor(time.time() - self.start_time) > self.timer):
-                self.timer = math.floor(time.time() - self.start_time)
+            next_interval = self.sample_rate_intervals_count * self.sample_interval
+            if((time.time() - self.start_time) > next_interval):
+                self.timer = next_interval
+                self.sample_rate_intervals_count = self.sample_rate_intervals_count + 1
 
     def stopTimer(self):
         self.is_running = False
 
     
     def getTimerValue(self):
-        return self.timer
+        return round(self.timer, 1)

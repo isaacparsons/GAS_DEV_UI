@@ -1,8 +1,10 @@
 import threading
 import time
 
-
-class DataController:
+# creates a thread that repeats every 'sampleInterval' seconds.
+# the thread runs '__taskFuncPointer_' and adds the result to 
+# 'queue'
+class BackgroundTask:
     def __init__(self, sampleInterval, queue, __taskFuncPointer_):
         self.isRunning = False
         self.queue = queue
@@ -16,28 +18,11 @@ class DataController:
 
     def stop(self):
         self.isRunning = False
+        self.thread.join()
 
     def workerThread(self):
         while(self.isRunning):
             res = self.__taskFuncPointer_()
-            self.queue.put(res)
+            if(not res == None):
+                self.queue.put(res)
             time.sleep(self.sampleInterval)
-
-
-# flowMeterController = FlowMeter("COM6")
-# usbinterface = USBInterface("COM3")
-
-# flowmeter1Task = DataController(flowMeterController.readFlowRate, [])
-# usbinterfaceTask = DataController(usbinterface.getData, [])
-
-
-# def main():
-#     flowmeter1Task.start()
-#     time.sleep(5)
-#     usbinterfaceTask.start()
-#     time.sleep(20)
-#     flowmeter1Task.terminate()
-#     usbinterfaceTask.terminate()
-
-
-# main()

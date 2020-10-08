@@ -4,6 +4,8 @@ import minimalmodbus
 import time
 import serial
 
+
+# class to handle the temperature chamber
 class TemperatureChamber:
     def __init__(self):
         self.steps = 1
@@ -61,11 +63,17 @@ class TemperatureChamber:
     # def stopProfile(self):
 
     def readRemainingProfileTime(self):
-        hours = self.instrument.read_register(4119) # hours
-        minutes = self.instrument.read_register(4120) # minutes
-        seconds = self.instrument.read_register(4121) # seconds
-        return hours, minutes, seconds
-
+        if(self.instrument):
+            try:
+                hours = self.instrument.read_register(4119) # hours
+                minutes = self.instrument.read_register(4120) # minutes
+                seconds = self.instrument.read_register(4121) # seconds
+                return hours, minutes, seconds
+            except:
+                return None
+        else:
+            return None
+        
     # for ramp do (1, 0, 0,0,0,0,0,0,0,0,x,x,x,x,1,0)
     def addStep(self, stepType, inputWait, eo1, eo2, eo3, eo4, eo5, eo6, eo7, eo8, hours, mins, secs, sp, pid, gs):
         self.writeReg(4002,2,0) # insert step
@@ -98,7 +106,20 @@ class TemperatureChamber:
         self.set_point = pt
 
     def currentChamberTemperature(self):
-        return self.instrument.read_register(100, 1, 3, True)
+        if(self.instrument):
+            try:
+                return self.instrument.read_register(100, 1, 3, True)
+            except:
+                return None
+        else:
+            return None
+
+    def getTempAndTimeRemaining(self):
+        temp = self.currentChamberTemperature()
+        hours, minutes, seconds = self.readRemainingProfileTime()
+        return temp, hours, minutes, seconds
+
+        
 
 
 # tempChamber = TemperatureChamber("COM9")

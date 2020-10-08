@@ -49,3 +49,8 @@ class ControlPanelUI:
 
     def getFrame(self):
         return self.labelframe
+
+    def reset(self):
+        self.sample_rate_text.set(0)
+        self.time_elapsed_text.set(0)
+        
